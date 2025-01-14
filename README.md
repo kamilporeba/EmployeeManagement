@@ -18,7 +18,8 @@ CREATE TABLE employees (
     last_name VARCHAR(100) NOT NULL,  -- Last name
     position VARCHAR(100),  -- Position
     email VARCHAR(255)  -- Email address
-);````
+);
+```
 
 ### 2. `attendance_types` Table
 This table stores the different types of employee attendance.
@@ -28,7 +29,8 @@ This table stores the different types of employee attendance.
 CREATE TABLE attendance_types (
     id SERIAL PRIMARY KEY,  -- Auto-incrementing ID for attendance type
     type VARCHAR(50) NOT NULL  -- Type of attendance (e.g., vacation, sick leave)
-);````
+);
+```
 
 ### 3. `attendance` Table
 This table records the attendance of employees, including their check-in and check-out times, and associates them with an attendance type.
@@ -43,7 +45,8 @@ CREATE TABLE attendance (
     attendance_type_id INT,  -- Attendance type ID (foreign key to attendance_types)
     FOREIGN KEY (employee_id) REFERENCES employees(id),  -- Relation to employees table
     FOREIGN KEY (attendance_type_id) REFERENCES attendance_types(id)  -- Relation to attendance_types table
-);````
+);
+```
 
 ## Inserting Data
 ### 1. Example of Adding Employees to the `employees` Table:
@@ -59,7 +62,8 @@ VALUES
     ('Tomasz', 'Zieliński', 'Administrator', 'tomasz.zielinski@example.com'),
     ('Olga', 'Szymańska', 'Manager', 'olga.szymanska@example.com'),
     ('Adam', 'Krawczyk', 'Developer', 'adam.krawczyk@example.com'),
-    ('Ewa', 'Jankowska', 'Analyst', 'ewa.jankowska@example.com');````
+    ('Ewa', 'Jankowska', 'Analyst', 'ewa.jankowska@example.com');
+```
 
 ## License
 This project is licensed under the MIT License.
