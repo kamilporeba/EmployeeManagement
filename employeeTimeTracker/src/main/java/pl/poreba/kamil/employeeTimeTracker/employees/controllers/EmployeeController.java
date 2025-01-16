@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.poreba.kamil.employeeTimeTracker.aop.TimeDuration;
 import pl.poreba.kamil.employeeTimeTracker.employees.dtos.EmployeeDTO;
 import pl.poreba.kamil.employeeTimeTracker.employees.services.EmployeeService;
 import pl.poreba.kamil.employeeTimeTracker.exceptions.ResourceNotFoundException;
@@ -19,6 +20,7 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @GetMapping
+    @TimeDuration
     public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
         try {
             List<EmployeeDTO> employeeList = employeeService.getAllEmployees();
@@ -29,6 +31,7 @@ public class EmployeeController {
     }
 
     @PostMapping
+    @TimeDuration
     public ResponseEntity addNewEmployee(@RequestBody @Valid EmployeeDTO employee) {
         try {
             List<EmployeeDTO> employeeList = employeeService.getAllEmployees();
@@ -39,6 +42,7 @@ public class EmployeeController {
     }
 
     @GetMapping(path = "/{employeeId}")
+    @TimeDuration
     public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable(name = "employeeId") int id) {
         try {
             EmployeeDTO employeeDTO = employeeService.getEmployeeById(id);
@@ -49,6 +53,7 @@ public class EmployeeController {
     }
 
     @DeleteMapping
+    @TimeDuration
     public ResponseEntity removeEmployee(@RequestParam(name = "employeeId") int id) {
         try {
             employeeService.deleteEmployee(id);
