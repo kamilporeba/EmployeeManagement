@@ -34,7 +34,7 @@ public class EmployeeController {
     @TimeDuration
     public ResponseEntity addNewEmployee(@RequestBody @Valid EmployeeDTO employee) {
         try {
-            List<EmployeeDTO> employeeList = employeeService.getAllEmployees();
+            employeeService.addEmployee(employee);
             return new ResponseEntity(HttpStatus.CREATED);
         } catch (Exception ex) {
             return ResponseEntity.internalServerError().build();
