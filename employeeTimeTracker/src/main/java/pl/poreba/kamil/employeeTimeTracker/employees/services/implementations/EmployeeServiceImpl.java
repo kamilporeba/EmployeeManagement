@@ -1,12 +1,12 @@
 package pl.poreba.kamil.employeeTimeTracker.employees.services.implementations;
 
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import pl.poreba.kamil.employeeTimeTracker.employees.dtos.EmployeeDTO;
 import pl.poreba.kamil.employeeTimeTracker.employees.entities.Employee;
+import pl.poreba.kamil.employeeTimeTracker.employees.dtos.EmployeeDTO;
 import pl.poreba.kamil.employeeTimeTracker.employees.repositories.EmployeeRepository;
 import pl.poreba.kamil.employeeTimeTracker.employees.services.EmployeeService;
+import pl.poreba.kamil.employeeTimeTracker.employees.services.mapper.EmployeeMapper;
 import pl.poreba.kamil.employeeTimeTracker.exceptions.ResourceNotFoundException;
 
 import java.util.List;
@@ -17,31 +17,32 @@ import java.util.stream.Collectors;
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository repository;
-    private final ModelMapper mapper;
+    private final EmployeeMapper employeeMapper;
 
     @Override
-    public void addEmployee(EmployeeDTO employee) {
-        Employee employeeEntity = mapper.map(employee, Employee.class);
-        repository.addEmployee(employeeEntity);
+    public Employee addEmployee(Employee employee) {
+        EmployeeDTO employeeDTOEntity =  employeeMapper.map(employee);
+        repository.addEmployee(employeeDTOEntity);
+        return employeeMapper.map(employeeDTOEntity);
     }
 
     @Override
-    public EmployeeDTO getEmployeeById(int id) {
+    public Employee getEmployeeById(int id) {
         try {
-            Employee employeeEntity = getEmployeeDTOIfExists(id);
-            return mapper.map(employeeEntity, EmployeeDTO.class);
+            EmployeeDTO employeeDTOEntity = getEmployeeDTOIfExists(id);
+            return employeeMapper.map(employeeDTOEntity);
         } catch (Exception ex) {
             throw ex;
         }
     }
 
     @Override
-    public List<EmployeeDTO> getAllEmployees() {
+    public List<Employee> getAllEmployees() {
         return repository
                 .getAllEmployees()
                 .stream()
                 .map(
-                        employeeEntity -> mapper.map(employeeEntity, EmployeeDTO.class)
+                        employeeEntity -> employeeMapper.map(employeeEntity)
                 )
                 .collect(Collectors.toList()
                 );
@@ -57,11 +58,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
     }
 
-    private Employee getEmployeeDTOIfExists(int id) throws ResourceNotFoundException {
+    private EmployeeDTO getEmployeeDTOIfExists(int id) throws ResourceNotFoundException {
         try {
             return repository.getEmployeeById(id);
         } catch (Exception ex) {
-            throw new ResourceNotFoundException("Employee not found");
+            throw new ResourceNotFoundException("EmployeeDTO not found");
         }
     }
 }

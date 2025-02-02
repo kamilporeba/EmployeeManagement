@@ -7,10 +7,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
-import pl.poreba.kamil.employeeTimeTracker.employees.dtos.EmployeeDTO;
 import pl.poreba.kamil.employeeTimeTracker.employees.entities.Employee;
+import pl.poreba.kamil.employeeTimeTracker.employees.dtos.EmployeeDTO;
 import pl.poreba.kamil.employeeTimeTracker.employees.repositories.EmployeeRepository;
+import pl.poreba.kamil.employeeTimeTracker.employees.services.mapper.EmployeeMapper;
 import pl.poreba.kamil.employeeTimeTracker.exceptions.ResourceNotFoundException;
 
 import java.util.Collections;
@@ -27,18 +27,18 @@ class EmployeeServiceImplTest {
     private EmployeeRepository repository;
 
     @Spy
-    private ModelMapper mapper;
+    private EmployeeMapper mapper;
 
     @InjectMocks
     private EmployeeServiceImpl service;
 
-    private Employee mockedEmployee;
     private EmployeeDTO mockedEmployeeDTO;
+    private Employee mockedEmployee;
     private int id = 1;
 
     @BeforeEach
     void setUp() {
-        mockedEmployee = Employee.builder()
+        mockedEmployeeDTO = EmployeeDTO.builder()
                 .id(id)
                 .firstName("Jan")
                 .lastName("Kowalski")
@@ -46,7 +46,7 @@ class EmployeeServiceImplTest {
                 .position("Pracownik biurowy")
                 .build();
 
-        mockedEmployeeDTO = EmployeeDTO.builder()
+        mockedEmployee = Employee.builder()
                 .id(id)
                 .firstName("JanDTO")
                 .lastName("KowalskiDTO")
@@ -57,60 +57,50 @@ class EmployeeServiceImplTest {
 
     @Test
     void testAddEmployee_whenRequiredDataProvided_thenCreateEmployee() {
-        lenient().doNothing().when(repository).addEmployee(mockedEmployee);
+        lenient().when(repository.addEmployee(mockedEmployeeDTO)).thenReturn(mockedEmployeeDTO);
 
         assertDoesNotThrow(
-                () -> service.addEmployee(mockedEmployeeDTO)
+                () -> service.addEmployee(mockedEmployee)
         );
     }
 
     @Test
     void testAddEmployee_whenNotAllRequiredDataProcess_thenThrow() {
-        EmployeeDTO employeeDTO = EmployeeDTO.builder().id(1).build();
-        doThrow(new ResourceNotFoundException("")).when(repository).addEmployee(any(Employee.class));
+        Employee employee = Employee.builder().id(1).build();
+        doThrow(new ResourceNotFoundException("")).when(repository).addEmployee(any(EmployeeDTO.class));
 
         assertThrows(
                 ResourceNotFoundException.class,
-                () -> service.addEmployee(employeeDTO)
+                () -> service.addEmployee(employee)
         );
     }
 
     @Test
     void testGetEmployeeById_whenEmplyeeExistInDatabase_thenReturnEmployee() {
-        when(repository.getEmployeeById(id)).thenReturn(mockedEmployee);
+        when(repository.getEmployeeById(id)).thenReturn(mockedEmployeeDTO);
 
-        EmployeeDTO employee = service.getEmployeeById(id);
+        Employee employee = service.getEmployeeById(id);
 
-        assertEquals(employee.getEmail(),mockedEmployee.getEmail());
+        assertEquals(employee.getEmail(), mockedEmployeeDTO.getEmail());
     }
-
-//    @Test
-//    void testDeleteEmployee_whenEmployeeNotExistInDatabase_thenThrow() {
-//        doThrow(new ResourceNotFoundException("")).when(repository).deleteEmployee(anyInt());
-//
-//        assertThrows(
-//                ResourceNotFoundException.class,
-//                () -> service.deleteEmployee(id)
-//        );
-//    }
 
     @Test
     void testGellAllEmployee_whenDatabaseNotEmpty_thenReturnList() {
-        List<Employee> employees = Collections.singletonList(mockedEmployee);
-        when(repository.getAllEmployees()).thenReturn(employees);
+        List<EmployeeDTO> employeeDTOS = Collections.singletonList(mockedEmployeeDTO);
+        when(repository.getAllEmployees()).thenReturn(employeeDTOS);
 
-        List<EmployeeDTO> employeeDTOList = service.getAllEmployees();
+        List<Employee> employeeList = service.getAllEmployees();
 
-        assertEquals(employeeDTOList.isEmpty(), false);
-        assertEquals(employeeDTOList.getFirst().getFirstName(), mockedEmployee.getFirstName());
+        assertEquals(employeeList.isEmpty(), false);
+        assertEquals(employeeList.getFirst().getFirstName(), mockedEmployeeDTO.getFirstName());
     }
 
     @Test
     void testGetAllEmployee_whenDatabaseIsEmpty_thenReturnEmptyList() {
         when(repository.getAllEmployees()).thenReturn(Collections.emptyList());
 
-        List<EmployeeDTO> employeeDTOList = service.getAllEmployees();
+        List<Employee> employeeList = service.getAllEmployees();
 
-        assertEquals(employeeDTOList.isEmpty(), true);
+        assertEquals(employeeList.isEmpty(), true);
     }
 }

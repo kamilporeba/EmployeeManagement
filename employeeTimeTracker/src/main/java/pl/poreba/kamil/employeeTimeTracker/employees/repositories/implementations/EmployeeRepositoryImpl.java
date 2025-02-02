@@ -3,28 +3,36 @@ package pl.poreba.kamil.employeeTimeTracker.employees.repositories.implementatio
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import pl.poreba.kamil.employeeTimeTracker.employees.entities.Employee;
+import org.springframework.stereotype.Repository;
+import pl.poreba.kamil.employeeTimeTracker.employees.dtos.EmployeeDTO;
 import pl.poreba.kamil.employeeTimeTracker.employees.repositories.EmployeeRepository;
 
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
-@Component
+@Repository
 @Slf4j
 public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     private JdbcTemplate jdbcTemplate;
 
-    RowMapper<Employee> rowMapper = ((rs, rowNum) -> {
-        Employee employee = new Employee();
-        employee.setId(rs.getInt("id"));
-        employee.setFirstName(rs.getString("first_name"));
-        employee.setLastName(rs.getString("last_name"));
-        employee.setPosition(rs.getString("position"));
-        employee.setEmail(rs.getString("email"));
-        return  employee;
+    RowMapper<EmployeeDTO> rowMapper = ((rs, rowNum) -> {
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        employeeDTO.setId(rs.getInt("id"));
+        employeeDTO.setFirstName(rs.getString("first_name"));
+        employeeDTO.setLastName(rs.getString("last_name"));
+        employeeDTO.setPosition(rs.getString("position"));
+        employeeDTO.setEmail(rs.getString("email"));
+        return employeeDTO;
     });
 
     public EmployeeRepositoryImpl(JdbcTemplate jdbcTemplate) {
@@ -32,29 +40,55 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public void addEmployee(Employee employee) throws DataAccessException  {
+    public EmployeeDTO addEmployee(EmployeeDTO employeeDTO) throws DataAccessException  {
         String sql = "INSERT INTO employees (first_name, last_name, position, email) VALUES (?,?,?,?)";
+
+        KeyHolder key = new GeneratedKeyHolder();
         try {
-            jdbcTemplate.update(sql,
-                    employee.getFirstName(),
-                    employee.getLastName(),
-                    employee.getPosition(),
-                    employee.getEmail());
-            log.info("New employee added: " + employee.getFirstName() + employee.getLastName());
+            jdbcTemplate.update(new PreparedStatementCreator() {
+
+                @Override
+                public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                    final PreparedStatement ps = connection.prepareStatement(sql,
+                            Statement.RETURN_GENERATED_KEYS);
+                    ps.setString(1, employeeDTO.getFirstName());
+                    ps.setString(2, employeeDTO.getLastName());
+                    ps.setString(3, employeeDTO.getPosition());
+                    ps.setString(4, employeeDTO.getEmail());
+                    return ps;
+                }
+            }, key);
+
+            log.info("New employeeDTO added: " + employeeDTO.getFirstName() + employeeDTO.getLastName());
+            employeeDTO.setId((int) key.getKeys().get("id"));
+            return employeeDTO;
         } catch (DataAccessException error) {
             log.error("Problem with added employee " + error.getLocalizedMessage());
             throw error;
         }
+//
+//        try {
+//            jdbcTemplate.update(sql,
+//                    employeeDTO.getFirstName(),
+//                    employeeDTO.getLastName(),
+//                    employeeDTO.getPosition(),
+//                    employeeDTO.getEmail());
+//            log.info("New employeeDTO added: " + employeeDTO.getFirstName() + employeeDTO.getLastName());
+//            return employeeDTO;
+//        } catch (DataAccessException error) {
+//            log.error("Problem with added employee " + error.getLocalizedMessage());
+//            throw error;
+//        }
     }
 
 
     @Override
-    public Employee getEmployeeById(int id) throws DataAccessException {
+    public EmployeeDTO getEmployeeById(int id) throws DataAccessException {
         String sql = "select * from employees where id = ?";
         try {
-            Employee employee = jdbcTemplate.queryForObject(sql, new Object[]{id}, rowMapper);
-            log.info("Employee found id: " + employee.getId());
-            return employee;
+            EmployeeDTO employeeDTO = jdbcTemplate.queryForObject(sql, new Object[]{id}, rowMapper);
+            log.info("EmployeeDTO found id: " + employeeDTO.getId());
+            return employeeDTO;
         } catch (DataAccessException error) {
             log.error(String.format("Problem with retrieve user with id %s \n %s ", id, error.getLocalizedMessage()));
             throw error;
@@ -62,11 +96,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public List<Employee> getAllEmployees() {
+    public List<EmployeeDTO> getAllEmployees() {
         String sql = "select * from employees";
-        List<Employee> employees = jdbcTemplate.query(sql,rowMapper);
-        log.info("Retrieve employees");
-        return employees;
+        List<EmployeeDTO> employeeDTOS = jdbcTemplate.query(sql,rowMapper);
+        log.info("Retrieve employee");
+        return employeeDTOS;
     }
 
     @Override

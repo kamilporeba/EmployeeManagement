@@ -2,13 +2,13 @@ package pl.poreba.kamil.employeeTimeTracker.employees.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.apache.bcel.Repository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.poreba.kamil.employeeTimeTracker.aop.TimeDuration;
-import pl.poreba.kamil.employeeTimeTracker.employees.dtos.EmployeeDTO;
+import pl.poreba.kamil.employeeTimeTracker.employees.entities.Employee;
 import pl.poreba.kamil.employeeTimeTracker.employees.services.EmployeeService;
-import pl.poreba.kamil.employeeTimeTracker.exceptions.ResourceNotFoundException;
 
 import java.util.List;
 
@@ -21,45 +21,29 @@ public class EmployeeController {
 
     @GetMapping
     @TimeDuration
-    public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
-        try {
-            List<EmployeeDTO> employeeList = employeeService.getAllEmployees();
-            return ResponseEntity.ok(employeeList);
-        } catch (ResourceNotFoundException ex) {
-            throw ex;
-        }
+    public ResponseEntity<List<Employee>> getAllEmployees() {
+        List<Employee> employeeList = employeeService.getAllEmployees();
+        return ResponseEntity.ok(employeeList);
     }
 
     @PostMapping
     @TimeDuration
-    public ResponseEntity addNewEmployee(@RequestBody @Valid EmployeeDTO employee) {
-        try {
-            employeeService.addEmployee(employee);
-            return new ResponseEntity(HttpStatus.CREATED);
-        } catch (Exception ex) {
-            return ResponseEntity.internalServerError().build();
-        }
+    public ResponseEntity addNewEmployee(@RequestBody @Valid Employee employee) {
+        Employee addedEmployee = employeeService.addEmployee(employee);
+        return new ResponseEntity<Employee>(addedEmployee, HttpStatus.CREATED);
     }
 
     @GetMapping(path = "/{employeeId}")
     @TimeDuration
-    public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable(name = "employeeId") int id) {
-        try {
-            EmployeeDTO employeeDTO = employeeService.getEmployeeById(id);
-            return ResponseEntity.ok(employeeDTO);
-        } catch (ResourceNotFoundException ex) {
-            throw ex;
-        }
+    public ResponseEntity<Employee> getEmployee(@PathVariable(name = "employeeId") int id) {
+        Employee employee = employeeService.getEmployeeById(id);
+        return ResponseEntity.ok(employee);
     }
 
-    @DeleteMapping
+    @DeleteMapping(path = "/{employeeId}")
     @TimeDuration
-    public ResponseEntity removeEmployee(@RequestParam(name = "employeeId") int id) {
-        try {
-            employeeService.deleteEmployee(id);
-            return ResponseEntity.ok().build();
-        } catch (ResourceNotFoundException ex) {
-            throw ex;
-        }
+    public ResponseEntity removeEmployee(@PathVariable(name = "employeeId") int id) {
+        employeeService.deleteEmployee(id);
+        return ResponseEntity.ok().build();
     }
 }

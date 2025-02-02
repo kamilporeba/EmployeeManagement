@@ -7,7 +7,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
-import pl.poreba.kamil.employeeTimeTracker.employees.entities.Employee;
+import pl.poreba.kamil.employeeTimeTracker.employees.dtos.EmployeeDTO;
 import pl.poreba.kamil.employeeTimeTracker.employees.repositories.EmployeeRepository;
 
 import java.util.List;
@@ -30,11 +30,11 @@ class EmployeeRepositoryImplTest {
         repository = new EmployeeRepositoryImpl(this.jdbcTemplate);
     }
 
-    private Employee mockEmployee;
+    private EmployeeDTO mockEmployeeDTO;
 
     @BeforeEach
     void setUp() {
-        mockEmployee = Employee.builder()
+        mockEmployeeDTO = EmployeeDTO.builder()
                 .id(1)
                 .firstName("Jan")
                 .lastName("Kowalski")
@@ -45,88 +45,88 @@ class EmployeeRepositoryImplTest {
 
     @Test
     void testAddEmployee_whenAllDataCorrect_thenNotThrow() {
-        assertDoesNotThrow(() -> repository.addEmployee(mockEmployee));
+        assertDoesNotThrow(() -> repository.addEmployee(mockEmployeeDTO));
     }
 
     @Test
     void testAddEmployee_whenDataNoCorrect_theThrow() {
         assertThrows(
                 DataAccessException.class,
-                () -> repository.addEmployee(new Employee())
+                () -> repository.addEmployee(new EmployeeDTO())
         );
     }
 
     @Test
     void testAddEmployee_whenNoLastNameSet_thenTrow() {
-        Employee partialFillEmployee = Employee.builder()
+        EmployeeDTO partialFillEmployeeDTO = EmployeeDTO.builder()
                 .firstName("Jan")
                 .email("test@test.com")
                 .position("Sprzątacz")
                 .build();
         assertThrows(
                 DataAccessException.class,
-                () -> repository.addEmployee(partialFillEmployee)
+                () -> repository.addEmployee(partialFillEmployeeDTO)
         );
     }
 
     @Test
     void testAddEmployee_whenNoFirstNameSet_thenTrow() {
-        Employee partialFillEmployee = Employee.builder()
+        EmployeeDTO partialFillEmployeeDTO = EmployeeDTO.builder()
                 .lastName("Kowalski")
                 .email("test@test.com")
                 .position("Sprzątacz")
                 .build();
         assertThrows(
                 DataAccessException.class,
-                () -> repository.addEmployee(partialFillEmployee)
+                () -> repository.addEmployee(partialFillEmployeeDTO)
         );
     }
 
     @Test
     void testAddEmployee_whenNoEmailSet_thenTrow() {
-        Employee partialFillEmployee = Employee.builder()
+        EmployeeDTO partialFillEmployeeDTO = EmployeeDTO.builder()
                 .lastName("Kowalski")
                 .firstName("Jan")
                 .position("Sprzątacz")
                 .build();
         assertDoesNotThrow(
-                () -> repository.addEmployee(partialFillEmployee)
+                () -> repository.addEmployee(partialFillEmployeeDTO)
         );
     }
 
     @Test
     void testAddEmployee_whenNoPositionSet_thenTrow() {
-        Employee partialFillEmployee = Employee.builder()
+        EmployeeDTO partialFillEmployeeDTO = EmployeeDTO.builder()
                 .firstName("Jan")
                 .lastName("Kowalski")
                 .email("test@test.com")
                 .build();
         assertDoesNotThrow(
-                () -> repository.addEmployee(partialFillEmployee)
+                () -> repository.addEmployee(partialFillEmployeeDTO)
         );
     }
 
     @Test
     void testGetAllEmployees_whenOneEmployeesAdded_thenReturnListNotEmpty() {
-        repository.addEmployee(mockEmployee);
-        List<Employee> list = repository.getAllEmployees();
+        repository.addEmployee(mockEmployeeDTO);
+        List<EmployeeDTO> list = repository.getAllEmployees();
         assertEquals(list.isEmpty(),false);
     }
 
     @Test
     void testGetAllEmployees_whenNoEmployeesInDatabase_thenReturnEmptyList() {
-        List<Employee> list = repository.getAllEmployees();
+        List<EmployeeDTO> list = repository.getAllEmployees();
         assertEquals(list.isEmpty(),true);
     }
 
     @Test
     void testGetEmployee_whenOneEmployeeInDatabase_thenReturnEmployee() {
-        repository.addEmployee(mockEmployee);
+        repository.addEmployee(mockEmployeeDTO);
         assertDoesNotThrow(
                 () -> repository.getEmployeeById(1)
         );
-        Employee employee = repository.getEmployeeById(1);
-        assertNotNull(employee);
+        EmployeeDTO employeeDTO = repository.getEmployeeById(1);
+        assertNotNull(employeeDTO);
     }
 
     @Test
@@ -139,7 +139,7 @@ class EmployeeRepositoryImplTest {
 
     @Test
     void testGetEmployee_whenOneEmployeeInDatabaseAndWrongId_thenThrow() {
-        repository.addEmployee(mockEmployee);
+        repository.addEmployee(mockEmployeeDTO);
         assertThrows(
                 DataAccessException.class,
                 () -> repository.getEmployeeById(3)
@@ -148,7 +148,7 @@ class EmployeeRepositoryImplTest {
 
     @Test
     void testRemoveEmployee_whenEmployeeInDatabaseExist_thenNoThrow() {
-        repository.addEmployee(mockEmployee);
+        repository.addEmployee(mockEmployeeDTO);
         assertDoesNotThrow(
                 () -> repository.deleteEmployee(1)
         );
@@ -156,7 +156,7 @@ class EmployeeRepositoryImplTest {
 
     @Test
     void testRemoveEmployee_whenEmployeeInDatabaseNotExist_thenThrow() {
-        repository.addEmployee(mockEmployee);
+        repository.addEmployee(mockEmployeeDTO);
         repository.deleteEmployee(4);
     }
 }
