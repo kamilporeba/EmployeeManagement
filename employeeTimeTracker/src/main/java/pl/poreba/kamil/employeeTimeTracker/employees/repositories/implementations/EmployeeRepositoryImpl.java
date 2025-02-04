@@ -44,6 +44,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         String sql = "INSERT INTO employees (first_name, last_name, position, email) VALUES (?,?,?,?)";
 
         KeyHolder key = new GeneratedKeyHolder();
+
         try {
             jdbcTemplate.update(new PreparedStatementCreator() {
 
@@ -66,19 +67,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             log.error("Problem with added employee " + error.getLocalizedMessage());
             throw error;
         }
-//
-//        try {
-//            jdbcTemplate.update(sql,
-//                    employeeDTO.getFirstName(),
-//                    employeeDTO.getLastName(),
-//                    employeeDTO.getPosition(),
-//                    employeeDTO.getEmail());
-//            log.info("New employeeDTO added: " + employeeDTO.getFirstName() + employeeDTO.getLastName());
-//            return employeeDTO;
-//        } catch (DataAccessException error) {
-//            log.error("Problem with added employee " + error.getLocalizedMessage());
-//            throw error;
-//        }
     }
 
 
